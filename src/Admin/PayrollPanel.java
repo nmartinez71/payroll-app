@@ -1,8 +1,12 @@
-package src;
+package src.Admin;
 import javax.swing.*;
+
+import src.DatabaseHelper;
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class PayrollPanel extends JPanel {

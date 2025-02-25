@@ -1,5 +1,8 @@
-package src;
+package src.Employee;
 import javax.swing.*;
+
+import src.DatabaseHelper;
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

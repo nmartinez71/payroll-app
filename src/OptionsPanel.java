@@ -6,10 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class OptionsPanel extends JPanel {
-    private JFrame parentFrame;
-
     public OptionsPanel(JFrame parentFrame) {
-        this.parentFrame = parentFrame;
         setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
         JButton signOutButton = new JButton("Sign Out");

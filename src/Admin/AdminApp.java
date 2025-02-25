@@ -1,10 +1,12 @@
-package src;
+package src.Admin;
 import javax.swing.*;
+
+import src.OptionsPanel;
 
 public class AdminApp extends JFrame {
     public AdminApp() {
         setTitle("Admin Panel");
-        setSize(600, 400);
+        setSize(800, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 

@@ -1,5 +1,8 @@
-package src;
+package src.Admin;
 import javax.swing.*;
+
+import src.DatabaseHelper;
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,9 +11,9 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 
-public class EmployeeManagementPanel extends JPanel {
-    public EmployeeManagementPanel() {
-        setLayout(new GridLayout(15, 2));
+public class DeleteEmployee extends JPanel {
+    public DeleteEmployee() {
+        setLayout(new GridLayout(8, 2));
 
         // Add form fields for employee details
         add(new JLabel("First Name:"));
@@ -76,9 +79,12 @@ public class EmployeeManagementPanel extends JPanel {
         });
         add(pictureButton);
 
+        //Spacer
+        add(new JLabel(""));
+
         // Save Button to insert data into the database
-        JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> {
+        JButton deleteButton = new JButton("Delete Employee");
+        deleteButton.addActionListener(e -> {
             // Validate inputs
             if (!validateInputs(firstNameField, lastNameField, dobField, emailField)) {
                 return;
@@ -112,7 +118,7 @@ public class EmployeeManagementPanel extends JPanel {
                 ex.printStackTrace();
             }
         });
-        add(saveButton);
+        add(deleteButton);
     }
 
     private boolean validateInputs(JTextField firstNameField, JTextField lastNameField, JTextField dobField, JTextField emailField) {

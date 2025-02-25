@@ -1,5 +1,8 @@
-package src;
+package src.Employee;
 import javax.swing.*;
+
+import src.OptionsPanel;
+import src.TimeEntryPanel;
 
 public class EmployeeApp extends JFrame {
     public EmployeeApp() {
