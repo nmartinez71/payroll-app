@@ -1,9 +1,14 @@
-package src;
-import javax.swing.*;
-import java.awt.*;
+package com.payrollapp;
+import java.awt.GridLayout;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class TimeEntryPanel extends JPanel {
     public TimeEntryPanel() {
@@ -36,8 +41,8 @@ public class TimeEntryPanel extends JPanel {
                     stmt.setInt(1, employeeId);
                     stmt.setDouble(2, hoursWorked);
                     stmt.setDouble(3, ptoHours);
-                    stmt.setDouble(4, 0); // Placeholder for gross pay
-                    stmt.setDouble(5, 0); // Placeholder for net pay
+                    stmt.setDouble(4, 0); 
+                    stmt.setDouble(5, 0); 
 
                     stmt.executeUpdate();
                     JOptionPane.showMessageDialog(this, "Time entry saved successfully!");

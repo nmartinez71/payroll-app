@@ -1,9 +1,6 @@
-package src.Admin;
-import javax.swing.*;
-
-import src.DatabaseHelper;
-
-import java.awt.*;
+package com.payrollapp.Admin;
+import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -11,8 +8,17 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 
-public class AddEmployee extends JPanel {
-    public AddEmployee() {
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import com.payrollapp.DatabaseHelper;
+
+public class DeleteEmployee extends JPanel {
+    public DeleteEmployee() {
         setLayout(new GridLayout(8, 2));
 
         // Add form fields for employee details
@@ -72,20 +78,20 @@ public class AddEmployee extends JPanel {
         JTextField zipField = new JTextField();
         add(zipField);
 
-        /* add(new JLabel("Picture:"));
+        add(new JLabel("Picture:"));
         JButton pictureButton = new JButton("Select Picture");
         pictureButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(this, "Picture selection functionality goes here.");
         });
-        add(pictureButton); */
+        add(pictureButton);
 
-        //Spacer
+        //spacer
         add(new JLabel(""));
 
-        // Save Button to insert data into the database
-        JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> {
-            // Validate inputs
+       
+        JButton deleteButton = new JButton("Delete Employee");
+        deleteButton.addActionListener(e -> {
+            
             if (!validateInputs(firstNameField, lastNameField, dobField, emailField)) {
                 return;
             }
@@ -110,23 +116,25 @@ public class AddEmployee extends JPanel {
                 stmt.setString(13, stateField.getText());
                 stmt.setString(14, zipField.getText());
 
+                stmt.setNull(15, java.sql.Types.BLOB); // Placeholder for picture (BLOB)
+
                 stmt.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Employee saved successfully!");
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
         });
-        add(saveButton);
+        add(deleteButton);
     }
 
     private boolean validateInputs(JTextField firstNameField, JTextField lastNameField, JTextField dobField, JTextField emailField) {
-        // Validate name fields
+      
         if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "First name and last name are required!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
-        // Validate date of birth (must be at least 18 years old)
+        
         try {
             LocalDate dob = LocalDate.parse(dobField.getText(), DateTimeFormatter.ISO_DATE);
             LocalDate now = LocalDate.now();
@@ -135,12 +143,12 @@ public class AddEmployee extends JPanel {
                 JOptionPane.showMessageDialog(this, "Employee must be at least 18 years old!", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-        } catch (Exception e) {
+        } catch (HeadlessException e) {
             JOptionPane.showMessageDialog(this, "Invalid date format! Use YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
-        // Validate email format
+     
         if (!emailField.getText().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             JOptionPane.showMessageDialog(this, "Invalid email format!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;

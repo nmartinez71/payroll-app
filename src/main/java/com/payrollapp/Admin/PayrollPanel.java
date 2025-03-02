@@ -1,13 +1,17 @@
-package src.Admin;
-import javax.swing.*;
-
-import src.DatabaseHelper;
-
-import java.awt.*;
+package com.payrollapp.Admin;
+import java.awt.GridLayout;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import com.payrollapp.DatabaseHelper;
 
 public class PayrollPanel extends JPanel {
     private JTextField empIdField;
@@ -35,12 +39,18 @@ public class PayrollPanel extends JPanel {
         add(resultField);
     }
 
+    public PayrollPanel(JTextField empIdField, JTextField hoursWorkedField, JTextField resultField) {
+        this.empIdField = empIdField;
+        this.hoursWorkedField = hoursWorkedField;
+        this.resultField = resultField;
+    }
+
     private void calculatePayroll() {
         try {
             int employeeId = Integer.parseInt(empIdField.getText());
             double hoursWorked = Double.parseDouble(hoursWorkedField.getText());
 
-            // Fetch employee details from the database
+           
             try (Connection conn = DatabaseHelper.getConnection();
                  PreparedStatement stmt = conn.prepareStatement("SELECT pay_type FROM employees WHERE employee_id = ?")) {
                 stmt.setInt(1, employeeId);
@@ -64,24 +74,31 @@ public class PayrollPanel extends JPanel {
 
     private double calculateGrossPay(double hoursWorked, String payType) {
         if (payType.equalsIgnoreCase("Hourly")) {
-            // Calculate overtime (1.5x for hours beyond 8/day or on Saturdays)
+            
             double regularHours = Math.min(hoursWorked, 8);
             double overtimeHours = Math.max(hoursWorked - 8, 0);
-            return (regularHours * 15) + (overtimeHours * 15 * 1.5); // Assuming $15/hour
+            return (regularHours * 15) + (overtimeHours * 15 * 1.5); 
         } else if (payType.equalsIgnoreCase("Salary")) {
-            // Salary employees are paid 8 hours/day (Monday to Friday)
-            return 8 * 5 * 15; // Assuming $15/hour for 5 days
+            
+            return 8 * 5 * 15;
         }
         return 0;
     }
 
     private double calculateNetPay(double grossPay) {
-        // Deductions: State Tax (3.15%), Federal Tax (7.65%), Social Security (6.2%), Medicare (1.45%)
         double stateTax = grossPay * 0.0315;
         double federalTax = grossPay * 0.0765;
         double socialSecurity = grossPay * 0.062;
         double medicare = grossPay * 0.0145;
 
         return grossPay - (stateTax + federalTax + socialSecurity + medicare);
+    }
+
+    public JTextField getEmpIdField() {
+        return empIdField;
+    }
+
+    public void setEmpIdField(JTextField empIdField) {
+        this.empIdField = empIdField;
     }
 }

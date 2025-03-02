@@ -1,5 +1,6 @@
-package src.Admin;
-import javax.swing.*;
+package com.payrollapp.Admin;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 public class EmployeeManagementPanel extends JPanel {
     public EmployeeManagementPanel() {

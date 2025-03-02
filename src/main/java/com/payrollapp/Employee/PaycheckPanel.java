@@ -1,13 +1,17 @@
-package src.Employee;
-import javax.swing.*;
-
-import src.DatabaseHelper;
-
-import java.awt.*;
+package com.payrollapp.Employee;
+import java.awt.GridLayout;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import com.payrollapp.DatabaseHelper;
 
 public class PaycheckPanel extends JPanel {
     public PaycheckPanel() {

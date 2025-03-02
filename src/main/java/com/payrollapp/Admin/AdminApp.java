@@ -1,7 +1,7 @@
-package src.Admin;
+package com.payrollapp.Admin;
 import javax.swing.*;
 
-import src.OptionsPanel;
+import com.payrollapp.OptionsPanel;
 
 public class AdminApp extends JFrame {
     public AdminApp() {

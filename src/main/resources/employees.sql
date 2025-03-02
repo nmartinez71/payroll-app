@@ -1,4 +1,6 @@
-SELECT * FROM employees WHERE employee_id = 1;
+ALTER TABLE employees ADD COLUMN password TEXT;
+
+/* SELECT * FROM employees WHERE employee_id = 1; */
 
 /* CREATE TABLE employees (
     employee_id INTEGER PRIMARY KEY AUTOINCREMENT,

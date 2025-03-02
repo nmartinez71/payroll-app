@@ -1,8 +1,8 @@
-package src.Employee;
+package com.payrollapp.Employee;
 import javax.swing.*;
 
-import src.OptionsPanel;
-import src.TimeEntryPanel;
+import com.payrollapp.OptionsPanel;
+import com.payrollapp.TimeEntryPanel;
 
 public class EmployeeApp extends JFrame {
     public EmployeeApp() {

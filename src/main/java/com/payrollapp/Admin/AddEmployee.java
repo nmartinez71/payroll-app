@@ -1,9 +1,7 @@
-package src.Admin;
-import javax.swing.*;
+package com.payrollapp.Admin;
 
-import src.DatabaseHelper;
-
-import java.awt.*;
+import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -11,11 +9,24 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 
-public class DeleteEmployee extends JPanel {
-    public DeleteEmployee() {
-        setLayout(new GridLayout(8, 2));
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
-        // Add form fields for employee details
+import org.mindrot.jbcrypt.BCrypt;
+
+import com.payrollapp.DatabaseHelper;
+
+public class AddEmployee extends JPanel {
+
+    public AddEmployee() {
+        setLayout(new GridLayout(9, 2));  
+
+        
         add(new JLabel("First Name:"));
         JTextField firstNameField = new JTextField();
         add(firstNameField);
@@ -72,28 +83,28 @@ public class DeleteEmployee extends JPanel {
         JTextField zipField = new JTextField();
         add(zipField);
 
-        add(new JLabel("Picture:"));
-        JButton pictureButton = new JButton("Select Picture");
-        pictureButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Picture selection functionality goes here.");
-        });
-        add(pictureButton);
+        add(new JLabel("Password:"));
+        JPasswordField passwordField = new JPasswordField();
+        add(passwordField);
 
-        //Spacer
+        //spacer
         add(new JLabel(""));
 
-        // Save Button to insert data into the database
-        JButton deleteButton = new JButton("Delete Employee");
-        deleteButton.addActionListener(e -> {
-            // Validate inputs
-            if (!validateInputs(firstNameField, lastNameField, dobField, emailField)) {
+   
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(e -> {
+          
+            if (!validateInputs(firstNameField, lastNameField, dobField, emailField, passwordField)) {
                 return;
             }
 
             try (Connection conn = DatabaseHelper.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(
-                         "INSERT INTO employees (first_name, last_name, department, job_title, status, date_of_birth, gender, pay_type, company_email, address_line1, address_line2, city, state, zip) " +
-                                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                         "INSERT INTO employees (first_name, last_name, department, job_title, status, date_of_birth, gender, pay_type, company_email, address_line1, address_line2, city, state, zip, password) " +
+                                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+
+                
+                String hashedPassword = BCrypt.hashpw(new String(passwordField.getPassword()), BCrypt.gensalt());
 
                 stmt.setString(1, firstNameField.getText());
                 stmt.setString(2, lastNameField.getText());
@@ -109,8 +120,7 @@ public class DeleteEmployee extends JPanel {
                 stmt.setString(12, cityField.getText());
                 stmt.setString(13, stateField.getText());
                 stmt.setString(14, zipField.getText());
-
-                stmt.setNull(15, java.sql.Types.BLOB); // Placeholder for picture (BLOB)
+                stmt.setString(15, hashedPassword); 
 
                 stmt.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Employee saved successfully!");
@@ -118,17 +128,17 @@ public class DeleteEmployee extends JPanel {
                 ex.printStackTrace();
             }
         });
-        add(deleteButton);
+        add(saveButton);
     }
 
-    private boolean validateInputs(JTextField firstNameField, JTextField lastNameField, JTextField dobField, JTextField emailField) {
-        // Validate name fields
+    private boolean validateInputs(JTextField firstNameField, JTextField lastNameField, JTextField dobField, JTextField emailField, JPasswordField passwordField) {
+        
         if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "First name and last name are required!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
-        // Validate date of birth (must be at least 18 years old)
+       
         try {
             LocalDate dob = LocalDate.parse(dobField.getText(), DateTimeFormatter.ISO_DATE);
             LocalDate now = LocalDate.now();
@@ -137,14 +147,20 @@ public class DeleteEmployee extends JPanel {
                 JOptionPane.showMessageDialog(this, "Employee must be at least 18 years old!", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-        } catch (Exception e) {
+        } catch (HeadlessException e) {
             JOptionPane.showMessageDialog(this, "Invalid date format! Use YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
-        // Validate email format
+        
         if (!emailField.getText().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             JOptionPane.showMessageDialog(this, "Invalid email format!", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+       
+        if (passwordField.getPassword().length == 0) {
+            JOptionPane.showMessageDialog(this, "Password is required!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 

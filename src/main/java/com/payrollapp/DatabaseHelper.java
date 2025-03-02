@@ -1,8 +1,12 @@
-package src;
-import java.sql.*;
+package com.payrollapp;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DatabaseHelper {
-    private static final String URL = "jdbc:sqlite:employee.db";
+    private static final String DB_PATH = "db/employee.db"; 
 
     public static Connection getConnection() throws SQLException {
         try {
@@ -11,14 +15,23 @@ public class DatabaseHelper {
         } catch (ClassNotFoundException e) {
             throw new SQLException("SQLite JDBC driver not found", e);
         }
-        return DriverManager.getConnection(URL);
+
+        
+        return DriverManager.getConnection("jdbc:sqlite:" + DB_PATH); 
     }
 
-
     public static void initializeDatabase() {
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
-            // Create employees table
+
+        File dbFile = new File(DB_PATH);
+        if (!dbFile.getParentFile().exists()) {
+            dbFile.getParentFile().mkdirs();
+        }
+
+
+        try (Connection conn = getConnection(); 
+             Statement stmt = conn.createStatement()) { 
+
+            
             stmt.execute("CREATE TABLE IF NOT EXISTS employees (" +
                     "employee_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "first_name TEXT NOT NULL, " +
@@ -37,7 +50,7 @@ public class DatabaseHelper {
                     "zip TEXT NOT NULL, " +
                     "picture BLOB)");
 
-            // Create payroll table
+        
             stmt.execute("CREATE TABLE IF NOT EXISTS payroll (" +
                     "payroll_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "employee_id INTEGER NOT NULL, " +
@@ -46,6 +59,9 @@ public class DatabaseHelper {
                     "gross_pay REAL NOT NULL, " +
                     "net_pay REAL NOT NULL, " +
                     "FOREIGN KEY (employee_id) REFERENCES employees (employee_id))");
+
+            System.out.println("Database initialized successfully.");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
