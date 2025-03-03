@@ -1,159 +1,221 @@
 package com.payrollapp.Admin;
+
 import java.awt.GridLayout;
-import java.awt.HeadlessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import com.payrollapp.DatabaseHelper;
 
 public class DeleteEmployee extends JPanel {
+
+    private JTextField firstNameField;
+    private JTextField lastNameField;
+    private JTextField departmentField;
+    private JTextField jobTitleField;
+    private JTextField statusField;
+    private JTextField dobField;
+    private JComboBox<String> genderComboBox;
+    private JComboBox<String> payTypeComboBox;
+    private JTextField emailField;
+    private JTextField addressLine1Field;
+    private JTextField addressLine2Field;
+    private JTextField cityField;
+    private JTextField stateField;
+    private JTextField zipField;
+
     public DeleteEmployee() {
         setLayout(new GridLayout(8, 2));
 
-        // Add form fields for employee details
+        add(new JLabel("Employee ID:"));
+        JTextField employeeidField = new JTextField();
+        add(employeeidField);
+
+        // Listener to pull employee data when ID is entered or modified
+        employeeidField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                pullEmployee(employeeidField.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                // Clear fields when employee ID is removed
+                clearEmployeeFields();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                // Not necessary for document changes
+            }
+        });
+
+        // Initialize and add fields for employee data
         add(new JLabel("First Name:"));
-        JTextField firstNameField = new JTextField();
+        firstNameField = new JTextField();
+        firstNameField.setEditable(false);  // Set as read-only
         add(firstNameField);
 
         add(new JLabel("Last Name:"));
-        JTextField lastNameField = new JTextField();
+        lastNameField = new JTextField();
+        lastNameField.setEditable(false);  // Set as read-only
         add(lastNameField);
 
         add(new JLabel("Department:"));
-        JTextField departmentField = new JTextField();
+        departmentField = new JTextField();
+        departmentField.setEditable(false);  // Set as read-only
         add(departmentField);
 
         add(new JLabel("Job Title:"));
-        JTextField jobTitleField = new JTextField();
+        jobTitleField = new JTextField();
+        jobTitleField.setEditable(false);  // Set as read-only
         add(jobTitleField);
 
         add(new JLabel("Status:"));
-        JTextField statusField = new JTextField();
+        statusField = new JTextField();
+        statusField.setEditable(false);  // Set as read-only
         add(statusField);
 
         add(new JLabel("Date of Birth (YYYY-MM-DD):"));
-        JTextField dobField = new JTextField();
+        dobField = new JTextField();
+        dobField.setEditable(false);  // Set as read-only
         add(dobField);
 
         add(new JLabel("Gender:"));
-        JComboBox<String> genderComboBox = new JComboBox<>(new String[]{"Male", "Female", "Other"});
+        genderComboBox = new JComboBox<>(new String[]{"Male", "Female", "Other"});
+        genderComboBox.setEnabled(false);  // Set combo box as read-only
         add(genderComboBox);
 
         add(new JLabel("Pay Type:"));
-        JComboBox<String> payTypeComboBox = new JComboBox<>(new String[]{"Salary", "Hourly"});
+        payTypeComboBox = new JComboBox<>(new String[]{"Salary", "Hourly"});
+        payTypeComboBox.setEnabled(false);  // Set combo box as read-only
         add(payTypeComboBox);
 
         add(new JLabel("Company Email:"));
-        JTextField emailField = new JTextField();
+        emailField = new JTextField();
+        emailField.setEditable(false);  // Set as read-only
         add(emailField);
 
         add(new JLabel("Address Line 1:"));
-        JTextField addressLine1Field = new JTextField();
+        addressLine1Field = new JTextField();
+        addressLine1Field.setEditable(false);  // Set as read-only
         add(addressLine1Field);
 
         add(new JLabel("Address Line 2:"));
-        JTextField addressLine2Field = new JTextField();
+        addressLine2Field = new JTextField();
+        addressLine2Field.setEditable(false);  // Set as read-only
         add(addressLine2Field);
 
         add(new JLabel("City:"));
-        JTextField cityField = new JTextField();
+        cityField = new JTextField();
+        cityField.setEditable(false);  // Set as read-only
         add(cityField);
 
         add(new JLabel("State:"));
-        JTextField stateField = new JTextField();
+        stateField = new JTextField();
+        stateField.setEditable(false);  // Set as read-only
         add(stateField);
 
         add(new JLabel("ZIP:"));
-        JTextField zipField = new JTextField();
+        zipField = new JTextField();
+        zipField.setEditable(false);  // Set as read-only
         add(zipField);
 
-        add(new JLabel("Picture:"));
-        JButton pictureButton = new JButton("Select Picture");
-        pictureButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Picture selection functionality goes here.");
-        });
-        add(pictureButton);
-
-        //spacer
-        add(new JLabel(""));
-
-       
+        // Delete employee button
         JButton deleteButton = new JButton("Delete Employee");
         deleteButton.addActionListener(e -> {
-            
-            if (!validateInputs(firstNameField, lastNameField, dobField, emailField)) {
+            if (employeeidField.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Employee ID is required to delete!", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            try (Connection conn = DatabaseHelper.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(
-                         "INSERT INTO employees (first_name, last_name, department, job_title, status, date_of_birth, gender, pay_type, company_email, address_line1, address_line2, city, state, zip) " +
-                                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+            int employeeId = Integer.parseInt(employeeidField.getText());
 
-                stmt.setString(1, firstNameField.getText());
-                stmt.setString(2, lastNameField.getText());
-                stmt.setString(3, departmentField.getText());
-                stmt.setString(4, jobTitleField.getText());
-                stmt.setString(5, statusField.getText());
-                stmt.setString(6, dobField.getText());
-                stmt.setString(7, (String) genderComboBox.getSelectedItem());
-                stmt.setString(8, (String) payTypeComboBox.getSelectedItem());
-                stmt.setString(9, emailField.getText());
-                stmt.setString(10, addressLine1Field.getText());
-                stmt.setString(11, addressLine2Field.getText());
-                stmt.setString(12, cityField.getText());
-                stmt.setString(13, stateField.getText());
-                stmt.setString(14, zipField.getText());
-
-                stmt.setNull(15, java.sql.Types.BLOB); // Placeholder for picture (BLOB)
-
-                stmt.executeUpdate();
-                JOptionPane.showMessageDialog(this, "Employee saved successfully!");
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+            // Delete the employee based on ID
+            deleteEmployee(employeeId);
         });
         add(deleteButton);
     }
 
-    private boolean validateInputs(JTextField firstNameField, JTextField lastNameField, JTextField dobField, JTextField emailField) {
-      
-        if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "First name and last name are required!", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
+    // Method to retrieve employee data based on the entered ID and populate fields
+    private void pullEmployee(String employeeId) {
+        if (employeeId.isEmpty()) {
+            return;
         }
 
-        
-        try {
-            LocalDate dob = LocalDate.parse(dobField.getText(), DateTimeFormatter.ISO_DATE);
-            LocalDate now = LocalDate.now();
-            int age = Period.between(dob, now).getYears();
-            if (age < 18) {
-                JOptionPane.showMessageDialog(this, "Employee must be at least 18 years old!", "Error", JOptionPane.ERROR_MESSAGE);
-                return false;
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM employees WHERE employee_id = ?")) {
+            stmt.setInt(1, Integer.parseInt(employeeId));
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                // Populate fields with employee data
+                firstNameField.setText(rs.getString("first_name"));
+                lastNameField.setText(rs.getString("last_name"));
+                departmentField.setText(rs.getString("department"));
+                jobTitleField.setText(rs.getString("job_title"));
+                statusField.setText(rs.getString("status"));
+                dobField.setText(rs.getString("date_of_birth"));
+                genderComboBox.setSelectedItem(rs.getString("gender"));
+                payTypeComboBox.setSelectedItem(rs.getString("pay_type"));
+                emailField.setText(rs.getString("company_email"));
+                addressLine1Field.setText(rs.getString("address_line1"));
+                addressLine2Field.setText(rs.getString("address_line2"));
+                cityField.setText(rs.getString("city"));
+                stateField.setText(rs.getString("state"));
+                zipField.setText(rs.getString("zip"));
+            } else {
+                JOptionPane.showMessageDialog(this, "Employee not found!", "Error", JOptionPane.ERROR_MESSAGE);
+                clearEmployeeFields();  // Clear fields if employee is not found
             }
-        } catch (HeadlessException e) {
-            JOptionPane.showMessageDialog(this, "Invalid date format! Use YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
+    }
 
-     
-        if (!emailField.getText().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            JOptionPane.showMessageDialog(this, "Invalid email format!", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
+    // Method to clear fields (e.g., when employee ID is removed or not found)
+    private void clearEmployeeFields() {
+        firstNameField.setText("");
+        lastNameField.setText("");
+        departmentField.setText("");
+        jobTitleField.setText("");
+        statusField.setText("");
+        dobField.setText("");
+        genderComboBox.setSelectedItem(null);
+        payTypeComboBox.setSelectedItem(null);
+        emailField.setText("");
+        addressLine1Field.setText("");
+        addressLine2Field.setText("");
+        cityField.setText("");
+        stateField.setText("");
+        zipField.setText("");
+    }
+
+    // Method to delete an employee based on the ID
+    private void deleteEmployee(int employeeId) {
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("DELETE FROM employees WHERE employee_id = ?")) {
+            stmt.setInt(1, employeeId);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(this, "Employee deleted successfully!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Employee not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error deleting employee!", "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        return true;
     }
 }
