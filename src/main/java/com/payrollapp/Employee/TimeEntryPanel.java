@@ -1,4 +1,4 @@
-package com.payrollapp;
+package com.payrollapp.Employee;
 import java.awt.GridLayout;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,6 +9,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import com.payrollapp.DatabaseHelper;
 
 public class TimeEntryPanel extends JPanel {
     public TimeEntryPanel() {

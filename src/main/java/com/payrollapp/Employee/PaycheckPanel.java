@@ -15,7 +15,7 @@ import com.payrollapp.DatabaseHelper;
 
 public class PaycheckPanel extends JPanel {
     public PaycheckPanel() {
-        setLayout(new GridLayout(10, 2));
+        setLayout(new GridLayout(20, 2));
 
         add(new JLabel("Employee ID:"));
         JTextField empIdField = new JTextField();

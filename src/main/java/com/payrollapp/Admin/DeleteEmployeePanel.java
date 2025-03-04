@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -16,7 +17,7 @@ import javax.swing.event.DocumentListener;
 
 import com.payrollapp.DatabaseHelper;
 
-public class DeleteEmployee extends JPanel {
+public class DeleteEmployeePanel extends JPanel {
 
     private JTextField firstNameField;
     private JTextField lastNameField;
@@ -33,14 +34,14 @@ public class DeleteEmployee extends JPanel {
     private JTextField stateField;
     private JTextField zipField;
 
-    public DeleteEmployee() {
-        setLayout(new GridLayout(8, 2));
+    public DeleteEmployeePanel() {
+        setLayout(new GridLayout(18, 2));
 
         add(new JLabel("Employee ID:"));
         JTextField employeeidField = new JTextField();
         add(employeeidField);
 
-        // Listener to pull employee data when ID is entered or modified
+        
         employeeidField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -50,88 +51,88 @@ public class DeleteEmployee extends JPanel {
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                // Clear fields when employee ID is removed
+                
                 clearEmployeeFields();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                // Not necessary for document changes
+                
             }
         });
 
-        // Initialize and add fields for employee data
+        
         add(new JLabel("First Name:"));
         firstNameField = new JTextField();
-        firstNameField.setEditable(false);  // Set as read-only
+        firstNameField.setEditable(false); 
         add(firstNameField);
 
         add(new JLabel("Last Name:"));
         lastNameField = new JTextField();
-        lastNameField.setEditable(false);  // Set as read-only
+        lastNameField.setEditable(false);  
         add(lastNameField);
 
         add(new JLabel("Department:"));
         departmentField = new JTextField();
-        departmentField.setEditable(false);  // Set as read-only
+        departmentField.setEditable(false);  
         add(departmentField);
 
         add(new JLabel("Job Title:"));
         jobTitleField = new JTextField();
-        jobTitleField.setEditable(false);  // Set as read-only
+        jobTitleField.setEditable(false);  
         add(jobTitleField);
 
         add(new JLabel("Status:"));
         statusField = new JTextField();
-        statusField.setEditable(false);  // Set as read-only
+        statusField.setEditable(false);  
         add(statusField);
 
         add(new JLabel("Date of Birth (YYYY-MM-DD):"));
         dobField = new JTextField();
-        dobField.setEditable(false);  // Set as read-only
+        dobField.setEditable(false);  
         add(dobField);
 
         add(new JLabel("Gender:"));
         genderComboBox = new JComboBox<>(new String[]{"Male", "Female", "Other"});
-        genderComboBox.setEnabled(false);  // Set combo box as read-only
+        genderComboBox.setEnabled(false);  
         add(genderComboBox);
 
         add(new JLabel("Pay Type:"));
         payTypeComboBox = new JComboBox<>(new String[]{"Salary", "Hourly"});
-        payTypeComboBox.setEnabled(false);  // Set combo box as read-only
+        payTypeComboBox.setEnabled(false);  
         add(payTypeComboBox);
 
         add(new JLabel("Company Email:"));
         emailField = new JTextField();
-        emailField.setEditable(false);  // Set as read-only
+        emailField.setEditable(false);  
         add(emailField);
 
         add(new JLabel("Address Line 1:"));
         addressLine1Field = new JTextField();
-        addressLine1Field.setEditable(false);  // Set as read-only
+        addressLine1Field.setEditable(false); 
         add(addressLine1Field);
 
         add(new JLabel("Address Line 2:"));
         addressLine2Field = new JTextField();
-        addressLine2Field.setEditable(false);  // Set as read-only
+        addressLine2Field.setEditable(false); 
         add(addressLine2Field);
 
         add(new JLabel("City:"));
         cityField = new JTextField();
-        cityField.setEditable(false);  // Set as read-only
+        cityField.setEditable(false);  
         add(cityField);
 
         add(new JLabel("State:"));
         stateField = new JTextField();
-        stateField.setEditable(false);  // Set as read-only
+        stateField.setEditable(false);
         add(stateField);
 
         add(new JLabel("ZIP:"));
         zipField = new JTextField();
-        zipField.setEditable(false);  // Set as read-only
+        zipField.setEditable(false); 
         add(zipField);
 
-        // Delete employee button
+        
         JButton deleteButton = new JButton("Delete Employee");
         deleteButton.addActionListener(e -> {
             if (employeeidField.getText().isEmpty()) {
@@ -141,13 +142,14 @@ public class DeleteEmployee extends JPanel {
 
             int employeeId = Integer.parseInt(employeeidField.getText());
 
-            // Delete the employee based on ID
+            
             deleteEmployee(employeeId);
+            clearEmployeeFields();
         });
         add(deleteButton);
     }
 
-    // Method to retrieve employee data based on the entered ID and populate fields
+    
     private void pullEmployee(String employeeId) {
         if (employeeId.isEmpty()) {
             return;
@@ -159,7 +161,6 @@ public class DeleteEmployee extends JPanel {
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                // Populate fields with employee data
                 firstNameField.setText(rs.getString("first_name"));
                 lastNameField.setText(rs.getString("last_name"));
                 departmentField.setText(rs.getString("department"));
@@ -176,14 +177,14 @@ public class DeleteEmployee extends JPanel {
                 zipField.setText(rs.getString("zip"));
             } else {
                 JOptionPane.showMessageDialog(this, "Employee not found!", "Error", JOptionPane.ERROR_MESSAGE);
-                clearEmployeeFields();  // Clear fields if employee is not found
+                clearEmployeeFields();  
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
 
-    // Method to clear fields (e.g., when employee ID is removed or not found)
+
     private void clearEmployeeFields() {
         firstNameField.setText("");
         lastNameField.setText("");
@@ -201,7 +202,7 @@ public class DeleteEmployee extends JPanel {
         zipField.setText("");
     }
 
-    // Method to delete an employee based on the ID
+    
     private void deleteEmployee(int employeeId) {
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement stmt = conn.prepareStatement("DELETE FROM employees WHERE employee_id = ?")) {

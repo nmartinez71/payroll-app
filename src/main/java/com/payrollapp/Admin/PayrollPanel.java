@@ -19,7 +19,7 @@ public class PayrollPanel extends JPanel {
     private JTextField resultField;
 
     public PayrollPanel() {
-        setLayout(new GridLayout(10, 2));
+        setLayout(new GridLayout(20, 2));
 
         add(new JLabel("Employee ID:"));
         empIdField = new JTextField();

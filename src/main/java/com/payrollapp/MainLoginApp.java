@@ -21,7 +21,6 @@ import javax.swing.SwingUtilities;
 
 import org.mindrot.jbcrypt.BCrypt;
 
-import com.payrollapp.Admin.AdminApp;
 import com.payrollapp.Employee.EmployeeApp;
 
 public class MainLoginApp extends JFrame {
@@ -30,15 +29,12 @@ public class MainLoginApp extends JFrame {
     private JComboBox<String> userTypeComboBox;
 
     public MainLoginApp() {
-
-        
-
         setTitle("Login Screen");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(4, 2));
+        JPanel panel = new JPanel(new GridLayout(4, 1));
 
         panel.add(new JLabel("User ID:"));
         userIdField = new JTextField();
@@ -58,10 +54,10 @@ public class MainLoginApp extends JFrame {
             String userId = userIdField.getText();
             String password = new String(passwordField.getPassword());
             String userType = (String) userTypeComboBox.getSelectedItem();
-            
+
             if (authenticate(userId, password, userType)) {
                 JOptionPane.showMessageDialog(MainLoginApp.this, "Login Successful!");
-                openUserPanel(userType);
+                openUserPanel(userType, userId);  
             } else {
                 JOptionPane.showMessageDialog(MainLoginApp.this, "Invalid credentials!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -74,40 +70,22 @@ public class MainLoginApp extends JFrame {
         });
         panel.add(exitButton);
 
-        /* JButton passwordButton = new JButton("gen pass");
-        passwordButton.addActionListener((ActionEvent e) -> {
-            String plainPassword = "password123"; 
-            String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
-            System.out.println("Hashed Password: " + hashedPassword);
-        });
-        panel.add(passwordButton); */
-        
-
         add(panel);
     }
-    
-
-    public class PasswordGenerator {
-        public void main(String[] args) {
-            
-        }
-    }
-
-
 
     private boolean authenticate(String userId, String password, String userType) {
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT * FROM employees WHERE employee_id = ? AND pay_type = ?")) {
-            
+
             stmt.setString(1, userId);
             stmt.setString(2, userType.equals("Admin") ? "Salary" : "Hourly");
 
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
-                String storedHashedPassword = rs.getString("password"); 
+                String storedHashedPassword = rs.getString("password");
                 if (BCrypt.checkpw(password, storedHashedPassword)) {
-                    System.out.println("Employee found: " + rs.getString("first_name") + " " + rs.getString("last_name"));
+                    System.out.println("Employee found: " + rs.getString("first_name") + " " + rs.getString("last_name")); 
                     return true;
                 } else {
                     System.out.println("Invalid password.");
@@ -118,22 +96,20 @@ public class MainLoginApp extends JFrame {
                 return false;
             }
         } catch (SQLException e) {
-            // Log the error and show a user-friendly message
             Logger.getLogger(MainLoginApp.class.getName()).log(Level.SEVERE, "Error during authentication", e);
             JOptionPane.showMessageDialog(null, "An error occurred while authenticating. Please try again later.", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-    
     }
 
-    
-
-
-    private void openUserPanel(String userType) {
+    // Update this method to accept the employeeId
+    private void openUserPanel(String userType, String employeeId) {
         if (userType.equals("Admin")) {
-            new AdminApp().setVisible(true);
+            // Open EmployeeApp with isAdmin set to true
+            new EmployeeApp(employeeId, true).setVisible(true);
         } else {
-            new EmployeeApp().setVisible(true);
+            // Open EmployeeApp with isAdmin set to false
+            new EmployeeApp(employeeId, false).setVisible(true);
         }
         this.dispose();
     }

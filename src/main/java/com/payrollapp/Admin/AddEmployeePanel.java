@@ -21,10 +21,10 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import com.payrollapp.DatabaseHelper;
 
-public class AddEmployee extends JPanel {
+public class AddEmployeePanel extends JPanel {
 
-    public AddEmployee() {
-        setLayout(new GridLayout(9, 2));  
+    public AddEmployeePanel() {
+        setLayout(new GridLayout(18, 2));  
 
         
         add(new JLabel("First Name:"));
@@ -44,8 +44,8 @@ public class AddEmployee extends JPanel {
         add(jobTitleField);
 
         add(new JLabel("Status:"));
-        JTextField statusField = new JTextField();
-        add(statusField);
+        JComboBox<String> statusComboBox = new JComboBox<>(new String[]{"Active", "Terminated"});
+        add(statusComboBox);
 
         add(new JLabel("Date of Birth (YYYY-MM-DD):"));
         JTextField dobField = new JTextField();
@@ -110,7 +110,7 @@ public class AddEmployee extends JPanel {
                 stmt.setString(2, lastNameField.getText());
                 stmt.setString(3, departmentField.getText());
                 stmt.setString(4, jobTitleField.getText());
-                stmt.setString(5, statusField.getText());
+                stmt.setString(5, (String) statusComboBox.getSelectedItem());
                 stmt.setString(6, dobField.getText());
                 stmt.setString(7, (String) genderComboBox.getSelectedItem());
                 stmt.setString(8, (String) payTypeComboBox.getSelectedItem());
@@ -125,7 +125,6 @@ public class AddEmployee extends JPanel {
                 stmt.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Employee saved successfully!");
             } catch (SQLException ex) {
-                ex.printStackTrace();
             }
         });
         add(saveButton);
@@ -166,4 +165,5 @@ public class AddEmployee extends JPanel {
 
         return true;
     }
+
 }
