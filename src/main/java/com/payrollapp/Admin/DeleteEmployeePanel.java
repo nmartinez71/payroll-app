@@ -34,7 +34,7 @@ public class DeleteEmployeePanel extends JPanel {
     private JTextField stateField;
     private JTextField zipField;
 
-    public DeleteEmployeePanel() {
+    public DeleteEmployeePanel(EmployeeListPanel employeeListPanel) {
         setLayout(new GridLayout(18, 2));
 
         add(new JLabel("Employee ID:"));
@@ -145,6 +145,7 @@ public class DeleteEmployeePanel extends JPanel {
             
             deleteEmployee(employeeId);
             clearEmployeeFields();
+            employeeListPanel.pullEmployee();
         });
         add(deleteButton);
     }

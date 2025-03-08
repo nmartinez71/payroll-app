@@ -1,0 +1,188 @@
+package com.payrollapp.Employee;
+
+import java.awt.GridLayout;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import com.payrollapp.DatabaseHelper;
+
+public class TimeEntryPanel extends JPanel {
+
+    private Employee employee; // Create an Employee object
+
+    public TimeEntryPanel() {
+        setLayout(new GridLayout(10, 2));
+
+        // UI components for entering time
+        add(new JLabel("Employee ID:"));
+        JTextField empIdField = new JTextField();
+        add(empIdField);
+
+        add(new JLabel("Hours Worked:"));
+        JTextField hoursWorkedField = new JTextField();
+        add(hoursWorkedField);
+
+        add(new JLabel("PTO Hours:"));
+        JTextField ptoField = new JTextField();
+        add(ptoField);
+
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(e -> {
+            try {
+                int employeeId = Integer.parseInt(empIdField.getText());
+                double hoursWorked = Double.parseDouble(hoursWorkedField.getText());
+                double ptoHours = Double.parseDouble(ptoField.getText());
+
+                // Retrieve employee information from the database (simplified)
+                this.employee = getEmployeeFromDatabase(employeeId);
+
+                if (employee != null) {
+                    // Add time entry to the employee's record (for hourly employees)
+                    TimeEntry timeEntry = new TimeEntry(hoursWorked, ptoHours);
+                    employee.getTimeEntries().add(timeEntry);
+
+                    // Save the time entry in the database
+                    try (Connection conn = DatabaseHelper.getConnection();
+                         PreparedStatement stmt = conn.prepareStatement(
+                                 "INSERT INTO payroll (employee_id, hours_worked, pto_hours) " +
+                                         "VALUES (?, ?, ?)")) {
+                        stmt.setInt(1, employeeId);
+                        stmt.setDouble(2, hoursWorked);
+                        stmt.setDouble(3, ptoHours);
+
+                        stmt.executeUpdate();
+                        JOptionPane.showMessageDialog(this, "Time entry saved successfully!");
+                    }
+
+                    // Optionally, calculate payroll (gross/net pay)
+                    // PayrollCalculator.calculatePayroll(employee);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Employee not found!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException | SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid input or database error!", "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        });
+        add(saveButton);
+    }
+
+    // Helper method to retrieve the employee from the database by employee ID
+    private Employee getEmployeeFromDatabase(int employeeId) {
+        // Logic to fetch employee from database by ID (you can implement it based on your database structure)
+        // This is just a placeholder for demonstration.
+        return new Employee(employeeId, "John", "Doe", "Hourly", 25.0); // Example employee
+    }
+}
+
+
+
+
+public class AdminPayrollPanel {
+    private PayrollCalculator payrollCalculator;
+
+    public AdminPayrollPanel() {
+        payrollCalculator = new PayrollCalculator();
+    }
+
+    public void processPayroll(Employee employee) {
+        // Calculate gross pay, deductions, and net pay
+        double grossPay = payrollCalculator.calculateGrossPay(employee);
+        double deductions = payrollCalculator.calculateDeductions(employee);
+        double netPay = payrollCalculator.calculateNetPay(employee);
+        
+        // Lock the employee's work entries to prevent further changes
+        lockWorkEntryForPayroll(employee);
+        
+        // Generate a payroll report
+        PayrollReport report = new PayrollReport();
+        report.generatePayrollReport(employee);
+        
+        // Show payroll information (or generate a report/file for HR)
+        System.out.println("Payroll processed for employee: " + employee.getFirstName());
+    }
+
+    private void lockWorkEntryForPayroll(Employee employee) {
+        // Set a flag or status to lock work entries for payroll processing
+        employee.setWorkEntryLocked(true);
+    }
+}
+
+
+
+package com.payrollapp.Payroll;
+
+public class PayrollCalculator {
+    
+    public double calculateGrossPay(Employee employee) {
+        double grossPay = 0;
+        
+        // Calculate based on pay type (Salary or Hourly)
+        if ("Salary".equals(employee.getPayType())) {
+            grossPay = employee.getSalary(); // Fixed salary
+            // Add PTO hours if necessary
+        } else {
+            double totalHoursWorked = 0;
+            for (TimeEntry entry : employee.getTimeEntries()) {
+                totalHoursWorked += entry.getHoursWorked();
+            }
+            grossPay = totalHoursWorked * employee.getHourlyRate();
+        }
+
+        // Deduct medical coverage and dependent stipends
+        if ("Single".equals(employee.getMedicalCoverage())) {
+            grossPay -= 50;
+        } else if ("Family".equals(employee.getMedicalCoverage())) {
+            grossPay -= 100;
+        }
+
+        // Deduct stipend for each dependent
+        for (Dependent dependent : employee.getDependents()) {
+            grossPay -= 45;
+        }
+
+        employee.setGrossPay(grossPay);
+        return grossPay;
+    }
+
+    public double calculateDeductions(Employee employee) {
+        double grossPay = employee.getGrossPay();
+        
+        double stateTax = grossPay * 0.0315;
+        double federalTax = grossPay * 0.0765;
+        double socialSecurityTax = grossPay * 0.062;
+        double medicareTax = grossPay * 0.0145;
+        
+        double totalDeductions = stateTax + federalTax + socialSecurityTax + medicareTax;
+        return totalDeductions;
+    }
+
+    public double calculateNetPay(Employee employee) {
+        double grossPay = calculateGrossPay(employee);
+        double deductions = calculateDeductions(employee);
+        double netPay = grossPay - deductions;
+        employee.setNetPay(netPay);
+        return netPay;
+    }
+}
+
+
+
+package com.payrollapp.Payroll;
+
+public class PayrollReport {
+
+    public void generatePayrollReport(Employee employee) {
+        System.out.println("Payroll Report for: " + employee.getFirstName() + " " + employee.getLastName());
+        System.out.println("Gross Pay: " + employee.getGrossPay());
+        System.out.println("Deductions: " + calculateDeductions(employee));
+        System.out.println("Net Pay: " + employee.getNetPay());
+    }
+}

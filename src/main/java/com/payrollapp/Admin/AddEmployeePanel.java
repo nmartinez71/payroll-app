@@ -1,7 +1,6 @@
 package com.payrollapp.Admin;
 
 import java.awt.GridLayout;
-import java.awt.HeadlessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -23,7 +22,7 @@ import com.payrollapp.DatabaseHelper;
 
 public class AddEmployeePanel extends JPanel {
 
-    public AddEmployeePanel() {
+    public AddEmployeePanel(EmployeeListPanel employeeListPanel) {
         setLayout(new GridLayout(18, 2));  
 
         
@@ -123,6 +122,8 @@ public class AddEmployeePanel extends JPanel {
                 stmt.setString(15, hashedPassword); 
 
                 stmt.executeUpdate();
+                employeeListPanel.pullEmployee();
+
                 JOptionPane.showMessageDialog(this, "Employee saved successfully!");
             } catch (SQLException ex) {
             }
@@ -131,13 +132,14 @@ public class AddEmployeePanel extends JPanel {
     }
 
     private boolean validateInputs(JTextField firstNameField, JTextField lastNameField, JTextField dobField, JTextField emailField, JPasswordField passwordField) {
-        
+    
+        // Check for empty fields
         if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "First name and last name are required!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-
-       
+    
+        // Validate date of birth
         try {
             LocalDate dob = LocalDate.parse(dobField.getText(), DateTimeFormatter.ISO_DATE);
             LocalDate now = LocalDate.now();
@@ -146,24 +148,29 @@ public class AddEmployeePanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Employee must be at least 18 years old!", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-        } catch (HeadlessException e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Invalid date format! Use YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-
-        
-        if (!emailField.getText().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+    
+        // Validate email
+        if (emailField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Email cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    
+        if (!emailField.getText().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
             JOptionPane.showMessageDialog(this, "Invalid email format!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-
-       
+    
+        // Validate password
         if (passwordField.getPassword().length == 0) {
             JOptionPane.showMessageDialog(this, "Password is required!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-
+    
         return true;
-    }
+    }    
 
 }
