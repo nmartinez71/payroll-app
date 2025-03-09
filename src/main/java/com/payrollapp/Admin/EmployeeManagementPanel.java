@@ -23,7 +23,10 @@ public class EmployeeManagementPanel extends JPanel {
 
         JTabbedPane tabbedPane2 = new JTabbedPane();
         tabbedPane2.addTab("Add Employee", new AddEmployeePanel(employeeListPanel));
+        tabbedPane2.addTab("Edit Employee", new EditEmployeePanel(employeeListPanel));
         tabbedPane2.addTab("Delete Employee", new DeleteEmployeePanel(employeeListPanel));
+        tabbedPane2.addTab("Enter Employee Time", new UpdateEmployeeHoursPanel(employeeListPanel));
+        tabbedPane2.addTab("Employee Payroll", new PayrollEmployeePanel(employeeListPanel));
 
         add(tabbedPane1, BorderLayout.CENTER);
         add(tabbedPane2, BorderLayout.SOUTH);

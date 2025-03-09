@@ -62,7 +62,7 @@ public class EmployeeInfoPanel extends JPanel {
         statusField.setEditable(false);  
         add(statusField);
 
-        add(new JLabel("Date of Birth (YYYY-MM-DD):"));
+        add(new JLabel("Date of Birth:"));
         dobField = new JTextField();
         dobField.setEditable(false);  
         add(dobField);
@@ -135,6 +135,10 @@ public class EmployeeInfoPanel extends JPanel {
                 cityField.setText(rs.getString("city"));
                 stateField.setText(rs.getString("state"));
                 zipField.setText(rs.getString("zip"));
+
+            
+                
+
             } else {
                 JOptionPane.showMessageDialog(this, "Employee not found!", "Error", JOptionPane.ERROR_MESSAGE);
             }

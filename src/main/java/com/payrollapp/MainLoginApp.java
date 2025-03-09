@@ -2,12 +2,12 @@ package com.payrollapp;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -24,9 +24,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import com.payrollapp.Employee.EmployeeApp;
 
 public class MainLoginApp extends JFrame {
-    private JTextField userIdField;
+    private JTextField emailField;
     private JPasswordField passwordField;
-    private JComboBox<String> userTypeComboBox;
+    private JComboBox<String> userTypeComboBox;  
+    
+    private EmployeeClass employee;
 
     public MainLoginApp() {
         setTitle("Login Screen");
@@ -34,84 +36,140 @@ public class MainLoginApp extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(4, 1));
+        JPanel panel = new JPanel(new GridLayout(5, 1));
 
-        panel.add(new JLabel("User ID:"));
-        userIdField = new JTextField();
-        panel.add(userIdField);
+        panel.add(new JLabel("Company Email:"));
+        emailField = new JTextField();
+        panel.add(emailField);
 
         panel.add(new JLabel("Password:"));
         passwordField = new JPasswordField();
         panel.add(passwordField);
 
+        
         panel.add(new JLabel("User Type:"));
-        String[] userTypes = {"Admin", "Employee"};
-        userTypeComboBox = new JComboBox<>(userTypes);
+        userTypeComboBox = new JComboBox<>(new String[]{"Admin", "Employee"});
         panel.add(userTypeComboBox);
 
+        
         JButton loginButton = new JButton("Login");
         loginButton.addActionListener((ActionEvent e) -> {
-            String userId = userIdField.getText();
+            String email = emailField.getText();
             String password = new String(passwordField.getPassword());
-            String userType = (String) userTypeComboBox.getSelectedItem();
-
-            if (authenticate(userId, password, userType)) {
+            String selectedUserType = (String) userTypeComboBox.getSelectedItem();
+            
+            employee = authenticate(email, password, selectedUserType);
+            if (employee != null) {
                 JOptionPane.showMessageDialog(MainLoginApp.this, "Login Successful!");
-                openUserPanel(userType, userId);  
+                openUserPanel(employee);
             } else {
                 JOptionPane.showMessageDialog(MainLoginApp.this, "Invalid credentials!", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
         panel.add(loginButton);
 
+        
         JButton exitButton = new JButton("Exit");
-        exitButton.addActionListener((ActionEvent e) -> {
-            System.exit(0);
-        });
+        exitButton.addActionListener((ActionEvent e) -> System.exit(0));
         panel.add(exitButton);
 
         add(panel);
     }
 
-    private boolean authenticate(String userId, String password, String userType) {
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM employees WHERE employee_id = ? AND pay_type = ?")) {
-
-            stmt.setString(1, userId);
-            stmt.setString(2, userType.equals("Admin") ? "Salary" : "Hourly");
-
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                String storedHashedPassword = rs.getString("password");
-                if (BCrypt.checkpw(password, storedHashedPassword)) {
-                    System.out.println("Employee found: " + rs.getString("first_name") + " " + rs.getString("last_name")); 
-                    return true;
-                } else {
-                    System.out.println("Invalid password.");
-                    return false;
+    private EmployeeClass authenticate(String email, String password, String userType) {
+        
+        if ("Admin".equals(userType) && email.equals("HR0001")) {
+            try (Connection conn = DatabaseHelper.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM employees WHERE company_email = ?")) {
+                stmt.setString(1, email);
+                ResultSet rs = stmt.executeQuery();
+        
+                if (rs.next()) {
+                    String storedHashedPassword = rs.getString("password");
+                    if (BCrypt.checkpw(password, storedHashedPassword)) {
+                        
+                        return createEmployeeFromResultSet(rs, true);  
+                    }
                 }
-            } else {
-                System.out.println("No matching employee found.");
-                return false;
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            Logger.getLogger(MainLoginApp.class.getName()).log(Level.SEVERE, "Error during authentication", e);
-            JOptionPane.showMessageDialog(null, "An error occurred while authenticating. Please try again later.", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
+            return null;  
+        }
+
+        
+        if ("Employee".equals(userType)) {
+            try (Connection conn = DatabaseHelper.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM employees WHERE company_email = ?")) {
+                stmt.setString(1, email);
+                ResultSet rs = stmt.executeQuery();
+    
+                if (rs.next()) {
+                    String storedHashedPassword = rs.getString("password");
+                    if (BCrypt.checkpw(password, storedHashedPassword)) {
+                        
+                        return createEmployeeFromResultSet(rs, false);  
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null; 
+    }
+
+    private EmployeeClass createEmployeeFromResultSet(ResultSet rs, boolean isAdmin) throws SQLException {
+        if ("Salaried".equals(rs.getString("pay_type"))) {
+            return new EmployeeClass(
+                rs.getInt("employee_id"),
+                rs.getString("first_name"),
+                rs.getString("last_name"),
+                rs.getString("pay_type"),
+                0.0,
+                rs.getDouble("pay_info"),
+                null,
+                rs.getString("medical_coverage"),
+                rs.getInt("num_dependents"),
+                isAdmin 
+            );
+        } else {
+            return new EmployeeClass(
+                rs.getInt("employee_id"),
+                rs.getString("first_name"),
+                rs.getString("last_name"),
+                rs.getString("pay_type"),
+                rs.getDouble("hourly_rate"),
+                0.0,
+                rs.getString("pay_info"),
+                rs.getString("medical_coverage"),
+                rs.getInt("num_dependents"),
+                isAdmin 
+            );
         }
     }
 
-    // Update this method to accept the employeeId
-    private void openUserPanel(String userType, String employeeId) {
-        if (userType.equals("Admin")) {
-            // Open EmployeeApp with isAdmin set to true
-            new EmployeeApp(employeeId, true).setVisible(true);
-        } else {
-            // Open EmployeeApp with isAdmin set to false
-            new EmployeeApp(employeeId, false).setVisible(true);
-        }
+    private void openUserPanel(EmployeeClass employee) {
+        
+        boolean isAdmin = employee.isAdmin();
+    
+        EmployeeApp employeeApp = new EmployeeApp(employee, isAdmin);
+        employeeApp.setVisible(true);
+    
+        employeeApp.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                logout();
+            }
+        });
+    
         this.dispose();
+    }
+    
+    private void logout() {
+        System.out.println("Logging out employee: " + (employee != null ? employee.getEmployeeId() : "Unknown"));
+        employee = null;
+    
+        SwingUtilities.invokeLater(() -> new MainLoginApp().setVisible(true));
     }
 
     public static void main(String[] args) {

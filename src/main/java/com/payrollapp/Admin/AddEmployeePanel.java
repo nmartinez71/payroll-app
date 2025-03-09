@@ -86,7 +86,7 @@ public class AddEmployeePanel extends JPanel {
         JPasswordField passwordField = new JPasswordField();
         add(passwordField);
 
-        //spacer
+        
         add(new JLabel(""));
 
    
@@ -133,13 +133,13 @@ public class AddEmployeePanel extends JPanel {
 
     private boolean validateInputs(JTextField firstNameField, JTextField lastNameField, JTextField dobField, JTextField emailField, JPasswordField passwordField) {
     
-        // Check for empty fields
+        
         if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "First name and last name are required!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
     
-        // Validate date of birth
+        
         try {
             LocalDate dob = LocalDate.parse(dobField.getText(), DateTimeFormatter.ISO_DATE);
             LocalDate now = LocalDate.now();
@@ -153,7 +153,7 @@ public class AddEmployeePanel extends JPanel {
             return false;
         }
     
-        // Validate email
+        
         if (emailField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Email cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
@@ -164,7 +164,7 @@ public class AddEmployeePanel extends JPanel {
             return false;
         }
     
-        // Validate password
+        
         if (passwordField.getPassword().length == 0) {
             JOptionPane.showMessageDialog(this, "Password is required!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
